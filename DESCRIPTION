@@ -1,0 +1,17 @@
+Package: dmhelp
+Type: Package
+Title: Helper functions for data mining projects
+Version: 0.2
+Date: 2014-08-24
+Author: Harry Southworth
+Maintainer: Harry Southworth <harry@dataclarityconsulting.co.uk>
+Description: Functions for reading, restructuring, tidying and summarizing data
+    prior to analysis
+License: TBD
+Imports:
+    reshape,
+    sas7bdat,
+    gbm
+Depends:
+    MASS,
+    brglm
