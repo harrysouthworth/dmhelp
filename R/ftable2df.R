@@ -16,10 +16,10 @@
 #' @examples ftable(mtcars[c("cyl", "vs", "am", "gear")])
 #' as.data.frame(ftable(mtcars[c("cyl", "vs", "am", "gear")]))
 #' ftable2data.frame(ftable(mtcars[c("cyl", "vs", "am", "gear")]))
-#' @export ftable2.data.frame
+#' @export ftable2data.frame
 ftable2data.frame <- function(x,...){
-  y <- format(x,quote=FALSE)
-  z <- data.frame(y[-1,],stringsAsFactors=FALSE)
+  y <- format(x, quote=FALSE)
+  z <- data.frame(y[-1,], stringsAsFactors=FALSE)
   names(z) <- y[1,]
   z
 }
