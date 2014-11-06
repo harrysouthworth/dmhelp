@@ -62,7 +62,11 @@ baselineData <- function(data, id="usubjid", test="param", baseline="base", wide
 #' @param test Character string naming the test identifier
 #' @param value Character string naming the column holding the lab values
 #' @param wide Whether or not to return the wide version of the dataset. Defaults to \code{wide=TRUE}
-visitData <- function(data, id="usubjid", visit="visitnum", keep, test="param", value="aval", wide=TRUE){
+#' @param check A function to check the type of the baseline variable with. Defaults to \code{check=is.double},
+#'        so it checks to see tha the variable is numeric double precision.
+visitData <- function(data, id="usubjid", visit="visitnum", keep, test="param", value="aval", wide=TRUE, check=is.double){
+  if (!check(data[, value]))
+    stop("The variable isn't of the type it should be according to the check argument")
   data <- data[!is.na(data[, id]), ]
   data <- data[!is.na(data[, visit]), ]
   data <- data[!is.na(data[, test]), ]
