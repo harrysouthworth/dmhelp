@@ -25,7 +25,11 @@ readSas <- function(path, file, stringsAsFactors=FALSE){
 #' @param test Character string naming the test identifier
 #' @param baseline Character string naming the column holding the baseline values
 #' @param wide Whether or not to return the wide version of the dataset. Defaults to \code{wide=TRUE}
-baselineData <- function(data, id="usubjid", test="param", baseline="base", wide=TRUE){
+#' @param check A function to check the type of the baseline variable with. Defaults to \code{check=is.double},
+#'        so it checks to see tha the variable is numeric double precision.
+baselineData <- function(data, id="usubjid", test="param", baseline="base", wide=TRUE, check=is.double){
+  if (!check(data[, baseline]))
+      stop("baseline variable isn't of the type it should be according to the check argument")
   
   data <- data[, c(id, test, baseline)]
   data <- data[!is.na(data[, test]), ]
