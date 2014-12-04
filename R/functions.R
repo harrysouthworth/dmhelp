@@ -1,3 +1,31 @@
+#' Merge together several data.frames
+#' Forcibly merge together data.frames contained in a list
+#' @param x A list containing an arbirary number of \code{data.frame}s.
+#' @param id The name of the column, common to all elements of \code{x}
+#'   that identifies the subjects.
+#' @return A \code{data.frame} containing the merged elements of \code{x}.
+#' @details The function does some basic checks on the inputs. In particular, it
+#'   fails if the id column contains missing values in any data.frame, or if the
+#'   number of rows in any data.frame is not equal to the number of unique elements
+#'   in the id column.
+#' @export munge
+munge <- function(x, id="usubjid"){
+  qc <- function(x, id){
+    if (any(is.na(x[, id])))
+      stop("ID column contains missing values")
+    if (nrow(x) != length(unique(x[, id])))
+      stop("Number of rows is not equal to number of unique IDs")
+    x
+  }
+  x <- lapply(x, qc, id=id)
+
+  res <- Reduce(function(...) merge(..., by=id, all=TRUE), x)
+  res <- qc(res)
+  invisible(res)
+}
+
+
+
 #' Read a SAS dataset with the .sas7bdat extension.
 #' @export
 #' @param path The full path to the directory containing the data files
