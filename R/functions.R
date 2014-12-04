@@ -20,11 +20,9 @@ munge <- function(x, id="usubjid"){
   x <- lapply(x, qc, id=id)
 
   res <- Reduce(function(...) merge(..., by=id, all=TRUE), x)
-  res <- qc(res)
+  res <- qc(res, id)
   invisible(res)
 }
-
-
 
 #' Read a SAS dataset with the .sas7bdat extension.
 #' @export
