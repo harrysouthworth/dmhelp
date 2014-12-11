@@ -1,3 +1,16 @@
+#' Change all character fields in a data.frame to factors
+#' @param x A \code{data.frame}.
+#' @export chars2factors
+chars2factors <- function(x){
+  if (!is.data.frame(x)) stop("x should be a data.frame")
+  wh <- sapply(x, is.character)
+  for (i in (1:ncol(x))[wh])
+    x[, i] <- as.factor(x[, i])
+  x
+}
+
+
+
 #' Merge together several data.frames
 #' Forcibly merge together data.frames contained in a list
 #' @param x A list containing an arbirary number of \code{data.frame}s.
