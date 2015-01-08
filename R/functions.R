@@ -196,7 +196,7 @@ binaries <- function(data){
 #' @param data A \code{data.frame}
 #' @param th The threshold proportion of NAs to detect. Defaults to 0.2
 #' @return A logical vector indicating which columns have lots of NAs
-highNAs <- function(data, th=.2){
+hiNAs <- function(data, th=.2){
   sapply(data, function(x) mean(is.na(x)) > th)
 }
 
@@ -217,30 +217,34 @@ summarizeNAs <- function(data, th=.2){
 #' @export
 #' @param data A \code{data.frame} or similar
 #' @param th The threshold for absolute correlation above which we want the pairs of variables
+#' @details The function coerces all columns to numeric before computing the correlation.
 #' @return A \code{data.frame} with 3 columns representing the pairs of variables and their Spearman's rank correlation
 hiCor <- function(data, th=.8){
   if (!is.element(class(data)[1], c("data.frame", "matrix", "cast_df")))
     stop("data should be a matrix, data.frame or cast_df")
 
   data <- as.data.frame(data)
+  data <- chars2factors(data)
+  data <- sapply(data, as.numeric)
   co <- cor(data, method="spearman", use="pairwise.complete.obs")
-  
-  # Sett diagonal and upper triangle to 0 to stop double counting
+
+  # Set diagonal and upper triangle to 0 to stop double counting
   co[upper.tri(co, diag=TRUE)] <- 0
   i <- abs(co) > th
-  
+
   wh <- apply(i, 2, function(x, threshold, rn)
-    rn[abs(x) > threshold], th, rn=rownames(co))
+                      rn[abs(x) > threshold], th, rn=rownames(co))
   v1 <- rep(names(wh), unlist(lapply(wh, length)))
   v2 <- unlist(wh)
-  
+
   co <- rep(0, length(v1))
+
   for (i in 1:length(co))
     co[i] <- cor(data[, v1[i]], data[, v2[i]], method="spearman", use="pairwise.complete.obs")
-  
+
   res <- data.frame(v1, v2, cor=co, stringsAsFactors=FALSE)
   rownames(res) <- NULL
   colnames(res) <- c("Variable 1", "Variable 2", "Corr.")
-  
+
   res[rev(order(abs(res$Corr.))), ]
 }

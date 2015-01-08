@@ -30,10 +30,14 @@ vt <- function(data, group, fo, n.trees=1000, shrinkage=.01, interaction.depth=6
 
   d1 <- d1[, names(d1) != group]
   d2 <- d2[, names(d2) != group]
-  
+
   shush <- if (quiet) suppressWarnings
-           else function(x) x
-  
+  else function(x) x
+
+  # Guess the distribution
+  if (missing(distribution))
+    shush(distribution <- gbm:::guessDist(model.response(model.frame(fo, d))))
+
   mod1 <- shush(gbm(fo, d1, n.trees=n.trees, shrinkage=shrinkage,
               interaction.depth=interaction.depth, cv.folds=cv.folds,
               distribution=distribution, class.stratify.cv=class.stratify.cv))
@@ -55,12 +59,17 @@ vt <- function(data, group, fo, n.trees=1000, shrinkage=.01, interaction.depth=6
   p2 <- c(predict(mod2, d1, n.tree=nt2), mod2$cv.fitted)
 
   res <- do.call("rbind", list(d1, d2))
+
+  # Drop response variable (both of them if survival).
+  drop <- names(get_all_vars(fo[-3], d1))
+  res <- res[, ! names(res) %in% drop]
+
   g <- make.names(g)
-  res[, paste0("p", g[1])] <- p1
-  res[, paste0("p", g[2])] <- p2
+  p <- data.frame(p1, p2)
+  names(p) <- c(paste0("p", g[1]), paste0("p", g[2]))
   
-  res <- list(data=res, mod1=mod1, mod2=mod2, call=match.call())
-  oldClass(res) <- "virtualTwins"
+  res <- list(data=res, predictions=p, mod1=mod1, mod2=mod2, call=match.call())
+  class(res) <- "virtualTwins"
   invisible(res)
 }
 
@@ -94,4 +103,34 @@ plot.virtualTwins <- function(x, n=12, abbrev=12, ...){
   dotchart(r1[n:1], pch=16)
   dotchart(r2[n:1], pch=16)
   invisible()
+}
+
+#' Get data for the second stage of a virtual twins analysis
+#' @param x An object of class 'virtualTwins' returned by \code{vt}.
+#' @param th The threshold of the difference in predicted values above which to classify
+#'   subjects as 'responders'. Defaults to \code{th=NULL} and not used.
+#' @param qu The quantile of the difference in predicted values above which to classify
+#'   subjects as responders. Defaults to \code{qu=.75} so that 1/4 of subjects are
+#'   deemed to be responders.
+#' @details If both \code{th=NULL} and \code{qu=NULL}, thresholding is not performed
+#'   and the difference between predicted values is returned.
+#' @return A \code{data.frame} containing all the predictors and the (thresholded)
+#'   difference in predicted values, \code{target}. Predicted values are on the scale of
+#'   the linear predictor, so using \code{th} will often not make much sense.
+#' @export vtData
+vtData <- function(x, th=NULL, qu=.75){
+  if (class(x) != "virtualTwins")
+    stop("x must have class 'virtualTwins'")
+  
+  res <- x$data
+  res$group <- NULL # Get rid of treatment groups
+  res$target <- x$predictions[, 2] - x$predictions[, 1]
+  
+  # Threshold if desired
+  if (!is.null(th))
+    res$target <- as.numeric(res$target > th)
+  else if (!is.null(qu))
+    res$target <- as.numeric(res$target > quantile(res$target, qu))
+
+  invisible(res)
 }
