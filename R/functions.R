@@ -213,6 +213,16 @@ summarizeNAs <- function(data, th=.2){
   miss[miss[, 2] != "100%", ]
 }
 
+#' Get columns with zero variance
+#' @param A \code{data.frame}.
+#' @details Non-numeric columns are coerced to numeric. A logical vector is
+#'   returned with \code{TRUE} for any column with zero variance.
+#' @export zeroVar
+zeroVar <- function(data){
+  res <- apply(data, 2, function(x) length(unique(na.omit(x))) < 2)
+  res > 0
+}
+
 #' Get pairs of variables with high absolute correlation
 #' @export
 #' @param data A \code{data.frame} or similar
@@ -226,7 +236,8 @@ hiCor <- function(data, th=.8){
   data <- as.data.frame(data)
   data <- chars2factors(data)
   data <- sapply(data, as.numeric)
-  co <- cor(data, method="spearman", use="pairwise.complete.obs")
+  co1 <- cor(data, method="spearman", use="pairwise.complete.obs")
+  co <- co1
 
   # Set diagonal and upper triangle to 0 to stop double counting
   co[upper.tri(co, diag=TRUE)] <- 0
@@ -246,5 +257,14 @@ hiCor <- function(data, th=.8){
   rownames(res) <- NULL
   colnames(res) <- c("Variable 1", "Variable 2", "Corr.")
 
-  res[rev(order(abs(res$Corr.))), ]
+  res <- res[rev(order(abs(res$Corr.))), ]
+  res <- list(correlation=co1, highest=res)
+  class(res) <- "hiCor"
+  res
 }
+
+plot.hiCor <- function(x, ...)
+  heatmap(x$correlation)
+
+print.hiCor <- function(x, ...)
+  print(x$highest)

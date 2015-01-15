@@ -9,7 +9,6 @@
 #' @param cv.folds Arguments to \code{gbm}
 #' @param distribution Arguments to \code{gbm}
 #' @param quiet Whether to suppress warnings and messages. Defaults to \code{quiet=FALSE}
-
 #' @param n In \code{plot.virtualTwins}, the number of predictors to include in the
 #'        relative influence plots. Relative influence is sorted and the function
 #'        plots the \code{n} most important.
@@ -112,19 +111,21 @@ plot.virtualTwins <- function(x, n=12, abbrev=12, ...){
 #' @param qu The quantile of the difference in predicted values above which to classify
 #'   subjects as responders. Defaults to \code{qu=.75} so that 1/4 of subjects are
 #'   deemed to be responders.
+#' @param order The order of the groups used in subtracting the fitted values. Defaults
+#'   to \code{order=1:2}, the only other valid option being \code{order=2:1}.
 #' @details If both \code{th=NULL} and \code{qu=NULL}, thresholding is not performed
 #'   and the difference between predicted values is returned.
 #' @return A \code{data.frame} containing all the predictors and the (thresholded)
 #'   difference in predicted values, \code{target}. Predicted values are on the scale of
 #'   the linear predictor, so using \code{th} will often not make much sense.
 #' @export vtData
-vtData <- function(x, th=NULL, qu=.75){
+vtData <- function(x, th=NULL, qu=.75, order=1:2){
   if (class(x) != "virtualTwins")
     stop("x must have class 'virtualTwins'")
   
   res <- x$data
   res$group <- NULL # Get rid of treatment groups
-  res$target <- x$predictions[, 2] - x$predictions[, 1]
+  res$target <- x$predictions[, order[1]] - x$predictions[, order[2]]
   
   # Threshold if desired
   if (!is.null(th))
