@@ -56,8 +56,9 @@ hiCor <- function(data, th=.8){
 
 #' @method plot hiCor
 #' @export plot.hiCor
-plot.hiCor <- function(x, ...)
-  heatmap(x$correlation)
+plot.hiCor <- function(x, ...){
+    heatmap(x[[1]])
+}
 
 #' @method print hiCor
 #' @export print.hiCor
