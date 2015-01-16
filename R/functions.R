@@ -9,8 +9,6 @@ chars2factors <- function(x){
   x
 }
 
-
-
 #' Merge together several data.frames
 #' Forcibly merge together data.frames contained in a list
 #' @param x A list containing an arbirary number of \code{data.frame}s.
@@ -174,44 +172,6 @@ wideData <- function(data, dm, id="usubjid", term="aeterm", trt="arm", arm.col=F
   invisible(wae)
 }
 
-#' Get the numeric columns of a data.frame
-#' @export
-#' @param data A \code{data.frame}
-#' @details Character and factor columns are dropped, and the remainder returned.
-numerics <- function(data){
-    sapply(data, function(x) !(is.factor(x) | is.character(x)))
-}
-
-#' Get the binary columns of a data.frame
-#' @export
-#' @param data A \code{data.frame}
-#' @return A logical vector indicating which columns have exactly 2 unique values after dropping NAs
-binaries <- function(data){
-  sapply(data, function(x) length(na.omit(x)) == 2)
-  
-}
-
-#' Get columns with a large proportion of missing values
-#' @export
-#' @param data A \code{data.frame}
-#' @param th The threshold proportion of NAs to detect. Defaults to 0.2
-#' @return A logical vector indicating which columns have lots of NAs
-hiNAs <- function(data, th=.2){
-  sapply(data, function(x) mean(is.na(x)) > th)
-}
-
-#' Find variables with a large proportion of missing values
-#' @export
-#' @param data A \code{data.frame}
-#' @param th The threshold above which the proportion of NAs is to be flagged. Defaults to \code{th=0.2}
-#' @return A character matrix with the names of the variables and the percentage of missing values.
-summarizeNAs <- function(data, th=.2){
-  nas <- highNAs(data, th)
-  miss <- cbind(names(nas)[nas], apply(data[, nas], 2,
-                                       function(x) paste0(signif(mean(is.na(x))*100, 3), "%")))
-  colnames(miss) <- c("Variable", "Missing")
-  miss[miss[, 2] != "100%", ]
-}
 
 #' Get columns with zero variance
 #' @param A \code{data.frame}.
@@ -223,48 +183,3 @@ zeroVar <- function(data){
   res > 0
 }
 
-#' Get pairs of variables with high absolute correlation
-#' @export
-#' @param data A \code{data.frame} or similar
-#' @param th The threshold for absolute correlation above which we want the pairs of variables
-#' @details The function coerces all columns to numeric before computing the correlation.
-#' @return A \code{data.frame} with 3 columns representing the pairs of variables and their Spearman's rank correlation
-hiCor <- function(data, th=.8){
-  if (!is.element(class(data)[1], c("data.frame", "matrix", "cast_df")))
-    stop("data should be a matrix, data.frame or cast_df")
-
-  data <- as.data.frame(data)
-  data <- chars2factors(data)
-  data <- sapply(data, as.numeric)
-  co1 <- cor(data, method="spearman", use="pairwise.complete.obs")
-  co <- co1
-
-  # Set diagonal and upper triangle to 0 to stop double counting
-  co[upper.tri(co, diag=TRUE)] <- 0
-  i <- abs(co) > th
-
-  wh <- apply(i, 2, function(x, threshold, rn)
-                      rn[abs(x) > threshold], th, rn=rownames(co))
-  v1 <- rep(names(wh), unlist(lapply(wh, length)))
-  v2 <- unlist(wh)
-
-  co <- rep(0, length(v1))
-
-  for (i in 1:length(co))
-    co[i] <- cor(data[, v1[i]], data[, v2[i]], method="spearman", use="pairwise.complete.obs")
-
-  res <- data.frame(v1, v2, cor=co, stringsAsFactors=FALSE)
-  rownames(res) <- NULL
-  colnames(res) <- c("Variable 1", "Variable 2", "Corr.")
-
-  res <- res[rev(order(abs(res$Corr.))), ]
-  res <- list(correlation=co1, highest=res)
-  class(res) <- "hiCor"
-  res
-}
-
-plot.hiCor <- function(x, ...)
-  heatmap(x$correlation)
-
-print.hiCor <- function(x, ...)
-  print(x$highest)
