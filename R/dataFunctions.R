@@ -83,8 +83,8 @@ baselineData <- function(data, id="usubjid", test="param", baseline="base", wide
 
   # Now need to reshape as wide
   if (wide){
-    data <- melt(data, id.vars=c(id, test), measure.vars=baseline)
-    data <- cast(data, as.formula(paste(id, "~", test)), direction="wide", value=baseline)
+    # Using tidyr - previous versions used reshape2
+    data <- spread_(data, test, baseline)
   }
   
   invisible(data)
