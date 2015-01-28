@@ -9,9 +9,10 @@ Description: Functions for reading, restructuring, tidying and summarizing data
     prior to analysis
 License: TBD
 Imports:
+    mi,
     sas7bdat,
     gbm
 Depends:
-    tidyr, dplyr,
     MASS,
+    tidyr, dplyr,
     brglm
