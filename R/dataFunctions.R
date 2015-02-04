@@ -1,3 +1,23 @@
+#' List contents of data files in a directory
+#' @param dir The path to the directory.
+#' @param ext The file extension of data files in the directory. Defaults to \code{ext=".csv"}
+#'   but NOTE that it is assumed that the fles are tab-delimited, not comma.
+#' @return Nothing
+#' @details The function finds all files with the specified file extension, reads
+#'   them with \code{read.delim} and then runs \code{str} on them.
+contents <- function(dir, ext=".csv"){
+  filenames <- list.files(dataPath, pattern="*.csv", full.names=TRUE)
+  ldf <- lapply(filenames, read.delim)
+  
+  for (i in 1:length(ldf)){
+    print(filenames[i])
+    str(ldf[[i]])
+    cat("\n")
+  }
+  invisible()
+}
+
+
 #' Change all character fields in a data.frame to factors
 #' @param x A \code{data.frame}.
 #' @export chars2factors
@@ -21,7 +41,7 @@ chars2factors <- function(x){
 #'   in the id column.
 #' @export munge
 munge <- function(x, id="usubjid"){
-  qc <- function(x, id){
+  qc <- function(x, id){ # quick sanity check
     if (any(is.na(x[, id])))
       stop("ID column contains missing values")
     if (nrow(x) != length(unique(x[, id])))
@@ -46,14 +66,57 @@ readSas <- function(path, file, stringsAsFactors=FALSE){
   if (!stringsAsFactors)
     res[sapply(res, is.factor)] <- lapply(res[sapply(res, is.factor)], as.character)
 
-  # Get rid of anything non-ascii
-  wh <- sapply(res, is.character)
-  res[, wh] <- lapply(res[, wh], iconv, to="ascii")
+  res <- forceAscii(res)
 
   # Do names and return
   names(res) <- casefold(names(res))
   res
 }
+
+#' Force character vectors in a data.frame to ascii
+#' @param x A data.frame.
+forceAscii <- function(x){
+  if (!is.data.frame(x)) stop("x should be a data.frame")
+  # Get rid of anything non-ascii
+  wh <- sapply(x, is.character)
+  x[, wh] <- lapply(x[, wh], iconv, to="ascii")
+  invisible(x)
+}
+
+#' Read tab-delimited data
+#' Read tab-delimited data ensuring strings are read as strings and are coerced to
+#'   ascii, and making sure names are lower case
+#' @param path String specifying the path to the data file
+#' @param file The name of the data file, excluding the path and extension
+#' @param ext The file extension, including a .
+#' @param stringsAsFactors Logical specifying if strings should be read as factors.
+#'   Defaults to \code{stringsAsFactors=FALSE}
+#' @export readTab
+readTab <- function(path, file, ext=".csv", stringsAsFactors=FALSE){
+  res <- read.delim(file.path(path, paste0(file, ext)), stringsAsFactors=stringsAsFactors)
+  res <- forceAscii(res)
+  names(res) <- casefold(names(res))
+  res
+}
+
+#' Read all data files in a directory and summarize the contents
+#' @param dir Character string specifying the path to the data files
+#' @param ext Character string specifying the file extension. Defaults to
+#'   \code{ext=".csv"}
+#' @note The function assumes it is looking for tab delimited values, even though
+#'   the extension is ".csv"
+contents <- function(dir, ext=".csv"){
+  filenames <- list.files(dataPath, pattern="*.csv", full.names=TRUE)
+  ldf <- lapply(filenames, read.delim)
+  
+  for (i in 1:length(ldf)){
+    print(filenames[i])
+    str(ldf[[i]])
+    cat("\n")
+  }
+  invisible()
+}
+
 
 #' Get baseline data from full lab, vital signs, or other dataset
 #' @export
@@ -179,7 +242,5 @@ wideData <- function(data, dm, id="usubjid", term="aeterm", trt="arm", arm.col=F
 #'   returned with \code{TRUE} for any column with zero variance.
 #' @export zeroVar
 zeroVar <- function(data){
-  res <- apply(data, 2, function(x) length(unique(na.omit(x))) < 2)
-  res > 0
+  apply(data, 2, function(x) length(unique(na.omit(x))) < 2)
 }
-

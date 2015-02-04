@@ -23,31 +23,31 @@ binaries <- function(data){
 hiCor <- function(data, th=.8){
   if (!is.element(class(data)[1], c("data.frame", "matrix", "cast_df")))
     stop("data should be a matrix, data.frame or cast_df")
-  
+
   data <- as.data.frame(data)
   data <- data[, numerics(data)]
   data <- data[, !binaries(data)]
   co1 <- cor(data, method="spearman", use="pairwise.complete.obs")
   co <- co1
-  
+
   # Set diagonal and upper triangle to 0 to stop double counting
   co[upper.tri(co, diag=TRUE)] <- 0
   i <- abs(co) > th
-  
+
   wh <- apply(i, 2, function(x, threshold, rn)
     rn[abs(x) > threshold], th, rn=rownames(co))
   v1 <- rep(names(wh), unlist(lapply(wh, length)))
   v2 <- unlist(wh)
-  
+
   co <- rep(0, length(v1))
-  
+
   for (i in 1:length(co))
     co[i] <- cor(data[, v1[i]], data[, v2[i]], method="spearman", use="pairwise.complete.obs")
-  
+
   res <- data.frame(v1, v2, cor=co, stringsAsFactors=FALSE)
   rownames(res) <- NULL
   colnames(res) <- c("Variable 1", "Variable 2", "Corr.")
-  
+
   res <- res[rev(order(abs(res$Corr.))), ]
   res <- list(correlation=co1, highest=res)
   class(res) <- "hiCor"

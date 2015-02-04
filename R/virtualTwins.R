@@ -35,7 +35,7 @@ vt <- function(data, group, fo, n.trees=1000, shrinkage=.01, interaction.depth=6
 
   # Guess the distribution
   if (missing(distribution))
-    shush(distribution <- gbm:::guessDist(model.response(model.frame(fo, d))))
+    shush(distribution <- gbm:::guessDist(model.response(model.frame(fo, d1))))
 
   mod1 <- shush(gbm(fo, d1, n.trees=n.trees, shrinkage=shrinkage,
               interaction.depth=interaction.depth, cv.folds=cv.folds,
