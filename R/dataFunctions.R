@@ -17,7 +17,6 @@ contents <- function(dir, ext=".csv"){
   invisible()
 }
 
-
 #' Change all character fields in a data.frame to factors
 #' @param x A \code{data.frame}.
 #' @export chars2factors
@@ -27,32 +26,6 @@ chars2factors <- function(x){
   for (i in (1:ncol(x))[wh])
     x[, i] <- as.factor(x[, i])
   x
-}
-
-#' Merge together several data.frames
-#' Forcibly merge together data.frames contained in a list
-#' @param x A list containing an arbirary number of \code{data.frame}s.
-#' @param id The name of the column, common to all elements of \code{x}
-#'   that identifies the subjects.
-#' @return A \code{data.frame} containing the merged elements of \code{x}.
-#' @details The function does some basic checks on the inputs. In particular, it
-#'   fails if the id column contains missing values in any data.frame, or if the
-#'   number of rows in any data.frame is not equal to the number of unique elements
-#'   in the id column.
-#' @export munge
-munge <- function(x, id="usubjid"){
-  qc <- function(x, id){ # quick sanity check
-    if (any(is.na(x[, id])))
-      stop("ID column contains missing values")
-    if (nrow(x) != length(unique(x[, id])))
-      stop("Number of rows is not equal to number of unique IDs")
-    x
-  }
-  x <- lapply(x, qc, id=id)
-
-  res <- Reduce(function(...) merge(..., by=id, all=TRUE), x)
-  res <- qc(res, id)
-  invisible(res)
 }
 
 #' Read a SAS dataset with the .sas7bdat extension.
@@ -98,25 +71,6 @@ readTab <- function(path, file, ext=".csv", stringsAsFactors=FALSE){
   names(res) <- casefold(names(res))
   res
 }
-
-#' Read all data files in a directory and summarize the contents
-#' @param dir Character string specifying the path to the data files
-#' @param ext Character string specifying the file extension. Defaults to
-#'   \code{ext=".csv"}
-#' @note The function assumes it is looking for tab delimited values, even though
-#'   the extension is ".csv"
-contents <- function(dir, ext=".csv"){
-  filenames <- list.files(dataPath, pattern="*.csv", full.names=TRUE)
-  ldf <- lapply(filenames, read.delim)
-  
-  for (i in 1:length(ldf)){
-    print(filenames[i])
-    str(ldf[[i]])
-    cat("\n")
-  }
-  invisible()
-}
-
 
 #' Get baseline data from full lab, vital signs, or other dataset
 #' @export
