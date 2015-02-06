@@ -12,11 +12,21 @@
 #' @param n In \code{plot.virtualTwins}, the number of predictors to include in the
 #'        relative influence plots. Relative influence is sorted and the function
 #'        plots the \code{n} most important.
-
 #' @return A list with the (reordered) data and the two fitted models. The data is sorted with
 #'         all of members of the first treatment group coming first, followed by the second
 #'         treatment group, and has two additional columns holding the predicted values of the response for
 #'         each treatment on the scale of the linear predictor.
+#' @details \code{vt} function is based on the idea of Foster et al, and uses
+#'   \code{gmb} to fit models to the 2 treatment groups in the data. Various tuning
+#'   parameters are avialble for \code{gbm}. Following advice in Hastie et al,
+#'   it is suggested that 10-fold cross-validation be used and that an interaction
+#'   depth of about 6 be used. Experience suggests that a shrinkage of about 0.01
+#'   works well, but the lower the shrinkage, the greater the number of trees required.
+#'   Besides the \code{gbm} tuning parameters, virtual twins requires another tuning
+#'   paramter: the threshold above which to classify patients as being "repsonders".
+#'   See \code{\link{vtData}} for details.
+#' @references J. C. Foster, J. M. G. Taylor and S. J. Ruberg, Subgroup identification
+#'   from randomized clinical trial data, Statistics in Medicine, 30, 2867 - 2880, 2011
 #' @export
 vt <- function(data, group, fo, n.trees=1000, shrinkage=.01, interaction.depth=6, cv.folds=10,
                distribution="bernoulli", class.stratify.cv=NULL, quiet=FALSE){
@@ -114,14 +124,29 @@ plot.virtualTwins <- function(x, n=12, abbrev=12, ...){
 #' @param order The order of the groups used in subtracting the fitted values. Defaults
 #'   to \code{order=1:2}, the only other valid option being \code{order=2:1}.
 #' @details If both \code{th=NULL} and \code{qu=NULL}, thresholding is not performed
-#'   and the difference between predicted values is returned.
+#'   and the difference between predicted values is returned. Presumably, the reason
+#'   for thresholding the difference in predicted values is that predictors of the
+#'   expected value are not necessarily the same predictors for an observation being
+#'   in the upper tail. Foster et al suggest a threshold 0.05 or 0.1 above the
+#'   population treatment difference when the response is 0/1. In practice, depending
+#'   on the amount of available data and on the precise question being asked of the
+#'   data, a higher or lower threshold might be preferrable. It will often be sensible
+#'   to use a few different threshold and see how sensitive the output is to the choice.
+#'   Predicted values are on the scale of the linear predictor, so using \code{th}
+#'   will often not make much sense. If it is desired to threshold on the scale of
+#'   the response, the \code{predictions} element of the fitted virtual twins object
+#'   should be accessed directly, using something like
+#'   \code{target = as.numeric(ilogit(x$predictions[, 1]) - ilogit(x$predictions[, 2])}
+#'   in which \link{\code{ilogit}} is the inverse logit transformation.
 #' @return A \code{data.frame} containing all the predictors and the (thresholded)
-#'   difference in predicted values, \code{target}. Predicted values are on the scale of
-#'   the linear predictor, so using \code{th} will often not make much sense.
+#'   difference in predicted values, \code{target}.
+#' @references J. C. Foster, J. M. G. Taylor and S. J. Ruberg, Subgroup identification
+#'   from randomized clinical trial data, Statistics in Medicine, 30, 2867 - 2880, 2011
 #' @export vtData
 vtData <- function(x, th=NULL, qu=.75, order=1:2){
   if (class(x) != "virtualTwins")
     stop("x must have class 'virtualTwins'")
+  
   
   res <- x$data
   res$group <- NULL # Get rid of treatment groups
