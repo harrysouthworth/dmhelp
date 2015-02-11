@@ -121,10 +121,12 @@ baselineData <- function(data, id="usubjid", test="param", baseline="base", wide
 visitData <- function(data, id="usubjid", visit="visitnum", keep, test="param", value="aval", wide=TRUE, check=is.double){
   if (!check(data[, value]))
     stop("The variable isn't of the type it should be according to the check argument")
+  if (missing(keep)) stop("You need to specify which visit's data to keep")
+
   data <- data[!is.na(data[, id]), ]
   data <- data[!is.na(data[, visit]), ]
   data <- data[!is.na(data[, test]), ]
-  if (missing(keep)) stop("You need to specify which visit's data to keep")
+
   data <- data[data[, visit] == keep, ]
 
   # Reorder and then use the last unique combination of subject and test
@@ -134,9 +136,10 @@ visitData <- function(data, id="usubjid", visit="visitnum", keep, test="param", 
   wh <- paste(data[, id], data[, test])
   data <- data[cumsum(rle(wh)$lengths), ]
 
+  data <- data[, c(id, test, value)]
+  
   if (wide){
-    data <- melt(data, id.vars=c(id, test), measure.vars=value)
-    data <- cast(data, as.formula(paste(id, "~", test)), direction="wide", value=value)
+    data <- spread_(data, test, value)
   }
 
   invisible(data)
