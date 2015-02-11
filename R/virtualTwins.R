@@ -123,6 +123,10 @@ plot.virtualTwins <- function(x, n=12, abbrev=12, ...){
 #'   deemed to be responders.
 #' @param order The order of the groups used in subtracting the fitted values. Defaults
 #'   to \code{order=1:2}, the only other valid option being \code{order=2:1}.
+#' @param shuffle Whether or not to shuffle the rows of the resulting \code{data.frame}
+#'   prior to returning. This features is so that any subsequent use of the data
+#'   that involves cross-validation does not necessarily have to do the shuffling
+#'   itself. Defaults to \code{shuffle=TRUE}.
 #' @details If both \code{th=NULL} and \code{qu=NULL}, thresholding is not performed
 #'   and the difference between predicted values is returned. Presumably, the reason
 #'   for thresholding the difference in predicted values is that predictors of the
@@ -143,7 +147,7 @@ plot.virtualTwins <- function(x, n=12, abbrev=12, ...){
 #' @references J. C. Foster, J. M. G. Taylor and S. J. Ruberg, Subgroup identification
 #'   from randomized clinical trial data, Statistics in Medicine, 30, 2867 - 2880, 2011
 #' @export vtData
-vtData <- function(x, th=NULL, qu=.75, order=1:2){
+vtData <- function(x, th=NULL, qu=.75, order=1:2, shuffle=TRUE){
   if (class(x) != "virtualTwins")
     stop("x must have class 'virtualTwins'")
   
@@ -158,5 +162,7 @@ vtData <- function(x, th=NULL, qu=.75, order=1:2){
   else if (!is.null(qu))
     res$target <- as.numeric(res$target > quantile(res$target, qu))
 
+  if (shuffle) res <- res[sample(1:nrow(res), size=nrow(res)), ]
+  
   invisible(res)
 }

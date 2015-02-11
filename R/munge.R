@@ -3,6 +3,9 @@
 #' @param ... An arbirary number of \code{data.frame}s.
 #' @param id The name of the column, common to all elements of \code{x}
 #'   that identifies the subjects.
+#' @param arm The name of the column identifying the treatment group. Defaults
+#'   to \code{arm="arm"} and the function will effectively ignore it if it isn't
+#'   in any of the data.
 #' @param prepend Logical, indicating of column names should be prepended by
 #'   the names of the \code{data.frames} passed in via \code{...}. Defaults
 #'   to \code{prepend=TRUE}.
@@ -15,7 +18,7 @@
 #'   number of rows in any data.frame is not equal to the number of unique elements
 #'   in the id column.
 #' @export munge
-munge <- function(..., id="usubjid", prepend=TRUE){
+munge <- function(..., id="usubjid", arm="arm", prepend=TRUE){
   # Get the data.frames from ..., get their names and change their colnames
   x <- list(...)
 
@@ -28,17 +31,17 @@ munge <- function(..., id="usubjid", prepend=TRUE){
   }
   x <- lapply(x, qc, id=id)
 
-  if (prepend){
+  if (prepend){ # Prepend variable names with the name of the dataset they're in
     nms <- as.list(match.call())[-1]
     nms <- lapply(nms, as.character)
     nms <- unlist(nms)[nms != "id"]
     
-    x <- lapply(1:length(x), function(X, x, id) {
-      wh <- names(x[[X]]) != id
+    x <- lapply(1:length(x), function(X, x, id, arm) {
+      wh <- !(names(x[[X]]) %in% c(id, arm))
       names(x[[X]])[wh] <- paste0(nms[X], ".", names(x[[X]])[wh])
       x[[X]]
     },
-    x=x, id=id)
+    x=x, id=id, arm=arm)
   }
   
   res <- Reduce(function(...) merge(..., by=id, all=TRUE), x)
