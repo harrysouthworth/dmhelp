@@ -23,7 +23,7 @@ crosstab <- function(x, y, prop=FALSE){
 #' @export print.crosstab
 print.crosstab <- function(x, ...) print(unclass(x), ...)
 
-#' @method xtable crosstab
+#' @export xtable.crosstab
 xtable.crosstab <- function(x, caption = NULL, label = NULL, align = NULL, digits = NULL, 
                             display = NULL, ...){
   xtable:::xtable.matrix(unclass(x), caption=caption, label=label, align=align, digits=digits, display=display, ...)

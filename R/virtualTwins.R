@@ -12,6 +12,7 @@
 #' @param n In \code{plot.virtualTwins}, the number of predictors to include in the
 #'        relative influence plots. Relative influence is sorted and the function
 #'        plots the \code{n} most important.
+#' @param n.cores The number of cores to use. Defaults to \code{n.cores=3}.
 #' @return A list with the (reordered) data and the two fitted models. The data is sorted with
 #'         all of members of the first treatment group coming first, followed by the second
 #'         treatment group, and has two additional columns holding the predicted values of the response for
@@ -29,7 +30,7 @@
 #'   from randomized clinical trial data, Statistics in Medicine, 30, 2867 - 2880, 2011
 #' @export
 vt <- function(data, group, fo, n.trees=1000, shrinkage=.01, interaction.depth=6, cv.folds=10,
-               distribution="bernoulli", class.stratify.cv=NULL, quiet=FALSE){
+               distribution="bernoulli", class.stratify.cv=NULL, quiet=FALSE, n.cores=3){
   g <- unique(data[, group])
   if (length(g) != 2)
      stop("There should be 2 treatment groups")
@@ -49,10 +50,10 @@ vt <- function(data, group, fo, n.trees=1000, shrinkage=.01, interaction.depth=6
 
   mod1 <- shush(gbm(fo, d1, n.trees=n.trees, shrinkage=shrinkage,
               interaction.depth=interaction.depth, cv.folds=cv.folds,
-              distribution=distribution, class.stratify.cv=class.stratify.cv))
+              distribution=distribution, class.stratify.cv=class.stratify.cv, n.cores=n.cores))
   mod2 <- shush(gbm(fo, d2, n.trees=n.trees, shrinkage=shrinkage,
               interaction.depth=interaction.depth, cv.folds=cv.folds,
-              distribution=distribution, class.stratify.cv=class.stratify.cv))
+              distribution=distribution, class.stratify.cv=class.stratify.cv, n.cores=n.cores))
 
   # See if the models converged
   nt1 <- gbm.perf(mod1, plot.it=FALSE, method="cv")
@@ -97,20 +98,24 @@ print.virtualTwins <- function(x, ...){
 
 #' @method plot virtualTwins
 #' @export
-plot.virtualTwins <- function(x, n=12, abbrev=12, ...){
-  n1 <- gbm.perf(x$mod1, method="cv", plot=FALSE)
-  n2 <- gbm.perf(x$mod2, method="cv", plot=FALSE)
+plot.virtualTwins <- function(x, n=12, abbrev=12, title=NULL, ...){
+  if (is.null(title))
+    title <- substring(names(x$predictions), 2)
+
+  par(mfrow=c(2, 2))
+
+  n1 <- gbm.perf(x$mod1, method="cv", main=title[1])
+  n2 <- gbm.perf(x$mod2, method="cv", main=title[2])
+  
   r1 <- relative.influence(x$mod1, scale=TRUE, sort=TRUE, n.trees=n1)
   r2 <- relative.influence(x$mod2, scale=TRUE, sort=TRUE, n.trees=n2)
   if (abbrev){
     names(r1) <- abbreviate(names(r1), 12)
     names(r2) <- abbreviate(names(r2), 12)
   }
-  par(mfrow=c(2, 2))
-  gbm.perf(x$mod1, method="cv")
-  gbm.perf(x$mod2, method="cv")
-  dotchart(r1[n:1], pch=16)
-  dotchart(r2[n:1], pch=16)
+
+  dotchart(r1[n:1], pch=16, xlab="Relative influence")
+  dotchart(r2[n:1], pch=16, xlab="Relative influence")
   invisible()
 }
 
