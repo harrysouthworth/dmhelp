@@ -12,7 +12,8 @@
 #' @param n In \code{plot.virtualTwins}, the number of predictors to include in the
 #'        relative influence plots. Relative influence is sorted and the function
 #'        plots the \code{n} most important.
-#' @param n.cores The number of cores to use. Defaults to \code{n.cores=3}.
+#' @param n.cores The number of cores to use. Defaults to \code{n.cores=NULL} and
+#'   \code{gbm} tries to guess how many cores are available, then use all but one of them.
 #' @return A list with the (reordered) data and the two fitted models. The data is sorted with
 #'         all of members of the first treatment group coming first, followed by the second
 #'         treatment group, and has two additional columns holding the predicted values of the response for
@@ -30,7 +31,7 @@
 #'   from randomized clinical trial data, Statistics in Medicine, 30, 2867 - 2880, 2011
 #' @export
 vt <- function(data, group, fo, n.trees=1000, shrinkage=.01, interaction.depth=6, cv.folds=10,
-               distribution="bernoulli", class.stratify.cv=NULL, quiet=FALSE, n.cores=3){
+               distribution="bernoulli", class.stratify.cv=NULL, quiet=FALSE, n.cores=NULL){
   g <- unique(data[, group])
   if (length(g) != 2)
      stop("There should be 2 treatment groups")
@@ -63,7 +64,7 @@ vt <- function(data, group, fo, n.trees=1000, shrinkage=.01, interaction.depth=6
   if (nt1 == n.trees | nt2 == n.trees)
     shush(warning("CV error didn't converge for at least one model"))
   
-  # Rather than add a load of transformations, use predictions and scale of
+  # Rather than add a load of transformations, use predictions on scale of
   # linear predictor and let the user decide what to do next.
   p1 <- c(mod1$cv.fitted, predict(mod1, d2, n.trees=nt1))
   p2 <- c(predict(mod2, d1, n.tree=nt2), mod2$cv.fitted)
@@ -76,7 +77,7 @@ vt <- function(data, group, fo, n.trees=1000, shrinkage=.01, interaction.depth=6
 
   g <- make.names(g)
   p <- data.frame(p1, p2)
-  names(p) <- c(paste0("p", g[1]), paste0("p", g[2]))
+  names(p) <- g # c(paste0("p", g[1]), paste0("p", g[2]))
   
   res <- list(data=res, predictions=p, mod1=mod1, mod2=mod2, call=match.call())
   class(res) <- "virtualTwins"
@@ -104,8 +105,8 @@ plot.virtualTwins <- function(x, n=12, abbrev=12, title=NULL, ...){
 
   par(mfrow=c(2, 2))
 
-  n1 <- gbm.perf(x$mod1, method="cv", main=title[1])
-  n2 <- gbm.perf(x$mod2, method="cv", main=title[2])
+  n1 <- gbm.perf(x$mod1, method="cv") # , main=title[1])
+  n2 <- gbm.perf(x$mod2, method="cv") # , main=title[2])
   
   r1 <- relative.influence(x$mod1, scale=TRUE, sort=TRUE, n.trees=n1)
   r2 <- relative.influence(x$mod2, scale=TRUE, sort=TRUE, n.trees=n2)
@@ -128,10 +129,6 @@ plot.virtualTwins <- function(x, n=12, abbrev=12, title=NULL, ...){
 #'   deemed to be responders.
 #' @param order The order of the groups used in subtracting the fitted values. Defaults
 #'   to \code{order=1:2}, the only other valid option being \code{order=2:1}.
-#' @param shuffle Whether or not to shuffle the rows of the resulting \code{data.frame}
-#'   prior to returning. This features is so that any subsequent use of the data
-#'   that involves cross-validation does not necessarily have to do the shuffling
-#'   itself. Defaults to \code{shuffle=TRUE}.
 #' @details If both \code{th=NULL} and \code{qu=NULL}, thresholding is not performed
 #'   and the difference between predicted values is returned. Presumably, the reason
 #'   for thresholding the difference in predicted values is that predictors of the
@@ -152,22 +149,18 @@ plot.virtualTwins <- function(x, n=12, abbrev=12, title=NULL, ...){
 #' @references J. C. Foster, J. M. G. Taylor and S. J. Ruberg, Subgroup identification
 #'   from randomized clinical trial data, Statistics in Medicine, 30, 2867 - 2880, 2011
 #' @export vtData
-vtData <- function(x, th=NULL, qu=.75, order=1:2, shuffle=TRUE){
+vtData <- function(x, th=NULL, qu=.75, order=1:2){
   if (class(x) != "virtualTwins")
     stop("x must have class 'virtualTwins'")
-  
-  
+
   res <- x$data
-  res$group <- NULL # Get rid of treatment groups
   res$target <- x$predictions[, order[1]] - x$predictions[, order[2]]
-  
+
   # Threshold if desired
   if (!is.null(th))
     res$target <- as.numeric(res$target > th)
   else if (!is.null(qu))
     res$target <- as.numeric(res$target > quantile(res$target, qu))
 
-  if (shuffle) res <- res[sample(1:nrow(res), size=nrow(res)), ]
-  
   invisible(res)
 }
