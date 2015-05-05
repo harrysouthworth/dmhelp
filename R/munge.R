@@ -29,6 +29,7 @@ munge <- function(..., id="usubjid", arm="arm", prepend=TRUE){
       stop("Number of rows is not equal to number of unique IDs")
     x
   }
+
   x <- lapply(x, qc, id=id)
 
   if (prepend){ # Prepend variable names with the name of the dataset they're in
