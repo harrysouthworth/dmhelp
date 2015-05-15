@@ -28,7 +28,6 @@ summarizeNAs <- function(data, th=.2){
 #' @details A simple wrapper for \code{mi:::missing.pattern.plot} with some default
 #'   argument values changed.
 #' @export missplot
-#' @importFrom mi mp.plot
 missplot <- function(data, xlab="Index", ylab="Variable", main="",
                      mar=c(5.1, 8.1, 4.1, 2.1), ...){
   oldpar <- par(no.readonly=TRUE)
