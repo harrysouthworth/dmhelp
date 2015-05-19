@@ -52,6 +52,7 @@ readSas <- function(path, file, stringsAsFactors=FALSE){
 
 #' Force character vectors in a data.frame to ascii
 #' @param x A data.frame.
+#' @export forceAscii
 forceAscii <- function(x){
   if (!is.data.frame(x)) stop("x should be a data.frame")
   # Get rid of anything non-ascii
