@@ -1,3 +1,20 @@
+#' Sort a clinical trial dataset
+#' 
+#' Sort a clinical trial dataset on one or two variables in it
+#' 
+#' @param data The data.frame to be sorted
+#' @param id The name of the first sorting variable. Defaults to 'pid'
+#' @param visit The name of the second sorting variable. Defaults to 'visitnum'
+#' @return The input data.frame, resorted.
+#' @export sortCTdata
+sortCTdata <- function(data, id="pid", visit="visit"){
+  # Sort the data on visit then pid
+  wh <- try(data[order(data[, visit]), ], silent=TRUE)
+  if (class(wh) != "try-error") data <- wh
+  data <- data[order(data[, id]), ]
+  invisible(data)
+}
+
 #' Get logical vector indicating if a value is a baseline value
 #' 
 #' Split data by subject, test and visit to compute a logical vector indicating if values are baseline values
@@ -84,25 +101,25 @@ makeBaselines <- function(data, id="subject", flag="baselineFlag", baseflag=1, v
   
   fun <- function(d, id, values){
     flag <- d$baselineFlag
-    
+
     b <- d[as.logical(flag), values]
-    N <- rle(d[, id])$lengths
-    
+    N <- rle(as.character(d[, id]))$lengths
+
     res <- try(rep(b, N), silent=TRUE)
     if (class(res) == "try-error")
       res <- rep(NA, nrow(d))
     d$baseline <- res
     d
   }
-  
+
   # Need to loop on the values of test
   sdata <- split(data, data[, test])
-  
+
   res <- lapply(sdata, fun, id=id, values=values)
   res <- do.call("rbind", res)
-  
+
   res <- sortCTdata(res, id=id, visit=visit)
   rownames(res) <- 1:nrow(res)
-  
+
   invisible(res)
 }

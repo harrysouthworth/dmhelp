@@ -1,8 +1,8 @@
 Package: dmhelp
 Type: Package
 Title: Helper functions for data mining projects
-Version: 0.3
-Date: 2015-02-11
+Version: 0.4
+Date: 2015-06-24
 Author: Harry Southworth
 Maintainer: Harry Southworth <harry@dataclarityconsulting.co.uk>
 Description: Functions for reading, restructuring, tidying and summarizing data
