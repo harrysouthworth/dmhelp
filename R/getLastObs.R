@@ -6,12 +6,18 @@
 #'   identifier. Defaults to \code{id="subject"}.
 #' @param time Character string giving the column name of the time variable.
 #'   Defaults to \code{time="studyday"}.
+#' @param test Character string giving the column name of the test variable.
+#'   The function assumes you've subset down to a single test and will fail
+#'   otherwise.
 #' @return A \code{data.frame} with the same columns, but reduced to the last
 #'   observation per observational unit.
-getLastObs <- function(data, id="subject", time="studyday"){
+getLastObs <- function(data, id="subject", time="studyday", test="test"){
   if (any(is.na(data[, subject] | is.na(data[, time]))))
     stop("Missing values in one of id or time")
 
+  if (length(unique(test)) > 1)
+    stop("You haven't subset on test")
+  
   data <- data[order(data[, time]), ]
   data <- data[order(data[, id]), ]
   
