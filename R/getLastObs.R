@@ -11,6 +11,7 @@
 #'   otherwise.
 #' @return A \code{data.frame} with the same columns, but reduced to the last
 #'   observation per observational unit.
+#' @export getLastObs
 getLastObs <- function(data, id="subject", time="studyday", test="test"){
   if (any(is.na(data[, subject] | is.na(data[, time]))))
     stop("Missing values in one of id or time")
