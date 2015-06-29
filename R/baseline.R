@@ -85,15 +85,17 @@ getBaselineFlag <- function(data, flag, id, test, visit="visit", baseflag=1, bas
 #' @param data A data.frame to have baseline values added
 #' @param id The name of the unique subject identifier variable. Defaults to 'subject'
 #' @param flag The name of the baseline flag variable in the data, if it exists
-#' @param The value that flag takes if the value is a baseline value. Defaults to 1
+#' @param baseflag The value that flag takes if the value is a baseline value. Defaults to 1
 #' @param visit The name of the variable identifying visits. Defaults to 'visit'
 #' @param basevisit The value that visit has when it is a baseline visit. Defaults to 0
 #' @param test The name of the variable that identifies the test being performed. Deafults to 'test'
 #' @param values The name of the variable containing the values of the test result. Defaults to 'value'
+#' @param keepFlag Whether to keep the column of baseline flags. Defaults to \code{keepFlag= FALSE}.
 #' @return A data.frame similar to the input data.frame, but with a column of baseline values called 'baseline' that
 #'         contains the baseline values for each element of test
 #' @export makeBaselines
-makeBaselines <- function(data, id="subject", flag="baselineFlag", baseflag=1, visit="visit", basevisit=0, test="test", values="value"){
+makeBaselines <- function(data, id="subject", flag="baselineFlag", baseflag=1, visit="visit",
+                          basevisit=0, test="test", values="value", keepFlag=FALSE){
   data <- data[order(data[, test]), ]
   data <- sortCTdata(data, id=id, visit=visit)
   
@@ -120,6 +122,8 @@ makeBaselines <- function(data, id="subject", flag="baselineFlag", baseflag=1, v
 
   res <- sortCTdata(res, id=id, visit=visit)
   rownames(res) <- 1:nrow(res)
+
+  if (!keepFlag) res <- res[, names(res) != flag]
 
   invisible(res)
 }
