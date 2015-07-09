@@ -58,7 +58,7 @@ getLogicalBaseline <- function(val, base){
 #' @export getBaselineFlag
 getBaselineFlag <- function(data, flag, id, test, visit="visit", baseflag=1, basevisit=0){
   # Create flag vector of 0s and 1s, or coerce existing flag vectors to 0s and 1s
-  
+
   # Check if flag exists, create empty column if not
   flag <- try(data[, flag], silent=TRUE)
   if (class(flag) == "try-error")
@@ -84,25 +84,33 @@ getBaselineFlag <- function(data, flag, id, test, visit="visit", baseflag=1, bas
 #' 
 #' @param data A data.frame to have baseline values added
 #' @param id The name of the unique subject identifier variable. Defaults to 'subject'
+#' @param baseline The name of the baseline column to be created
 #' @param flag The name of the baseline flag variable in the data, if it exists
 #' @param baseflag The value that flag takes if the value is a baseline value. Defaults to 1
 #' @param visit The name of the variable identifying visits. Defaults to 'visit'
 #' @param basevisit The value that visit has when it is a baseline visit. Defaults to 0
 #' @param test The name of the variable that identifies the test being performed. Deafults to 'test'
-#' @param values The name of the variable containing the values of the test result. Defaults to 'value'
+#' @param value The name of the variable containing the values of the test result. Defaults to 'value'
 #' @param keepFlag Whether to keep the column of baseline flags. Defaults to \code{keepFlag= FALSE}.
 #' @return A data.frame similar to the input data.frame, but with a column of baseline values called 'baseline' that
 #'         contains the baseline values for each element of test
+#' @details The function will remove any rows with missing values in the \code{value}
+#'   column. It tries to be sensible and make use of baseline flags or values if they already
+#'   exist.
 #' @export makeBaselines
-makeBaselines <- function(data, id="subject", flag="baselineFlag", baseflag=1, visit="visit",
-                          basevisit=0, test="test", values="value", keepFlag=FALSE){
+makeBaselines <- function(data, id="subject", baseline="baseline", flag="baselineFlag", baseflag=1,
+                          visit="visit", basevisit=0, test="test", value="value", keepFlag=FALSE){
   data <- data[order(data[, test]), ]
   data <- sortCTdata(data, id=id, visit=visit)
+
+  nr <- nrow(data)
+  data <- data[!is.na(data[, value]), ]
+  if (nrow(data) < nr) warning("Rows with missing values in 'value' have been dropped")
   
-  data$baselineFlag <- getBaselineFlag(data, flag, id, test, visit, baseflag, basevisit)
-  
+  data[, flag] <- getBaselineFlag(data, flag, id, test, visit, baseflag, basevisit)
+
   fun <- function(d, id, values){
-    flag <- d$baselineFlag
+    flag <- d[, flag]
 
     b <- d[as.logical(flag), values]
     N <- rle(as.character(d[, id]))$lengths
@@ -110,14 +118,14 @@ makeBaselines <- function(data, id="subject", flag="baselineFlag", baseflag=1, v
     res <- try(rep(b, N), silent=TRUE)
     if (class(res) == "try-error")
       res <- rep(NA, nrow(d))
-    d$baseline <- res
+    d[, baseline] <- res
     d
   }
 
   # Need to loop on the values of test
   sdata <- split(data, data[, test])
 
-  res <- lapply(sdata, fun, id=id, values=values)
+  res <- lapply(sdata, fun, id=id, values=value)
   res <- do.call("rbind", res)
 
   res <- sortCTdata(res, id=id, visit=visit)
