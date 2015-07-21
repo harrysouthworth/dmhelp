@@ -13,6 +13,5 @@ Imports:
     sas7bdat,
     gbm
 Depends:
-    MASS,
     tidyr, dplyr,
-    brglm
+    brglm, MASS

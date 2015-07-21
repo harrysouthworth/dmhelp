@@ -159,9 +159,9 @@ visitData <- function(data, id="usubjid", visit="visitnum", keep, test="param", 
 #' @param term The name of the column identifying AE terms. Defaults to \code{term="aeterm"}
 #' @param id.col Whether to include the subject identifier as a column in the output (the rownames get the subject identifiers). Defaults to \code{id.col=TRUE}
 #' @param arm.col Whether to include the treatment arm as a column in the output. Defaults to \code{arm.col=FALSE}
-#' @param drop Drop columns in which fewer than \code{drop} of cases are 1. Defaults to \code{drop=.03}
+#' @param drop Drop columns in which fewer than \code{drop} of cases are 1. Defaults to \code{drop=0}
 #' @param verbose Whether to report progress. Defaults to \code{verbose=TRUE}
-wideData <- function(data, dm, id="usubjid", term="aeterm", trt="arm", arm.col=FALSE, id.col=TRUE, drop=0.03, verbose=FALSE){
+wideData <- function(data, dm, id="usubjid", term="aeterm", trt="arm", arm.col=FALSE, id.col=TRUE, drop=0, verbose=FALSE){
   if(!is.element(trt, names(dm))) stop("dm doesn't contain trt")
   
   data[, term] = as.character(data[, term])
@@ -179,8 +179,8 @@ wideData <- function(data, dm, id="usubjid", term="aeterm", trt="arm", arm.col=F
   
   aes <- lapply(uae, fun, data = data, subs = id, demog = dm, term = term)
   wae <- as.data.frame(do.call("cbind", aes))
-  dimnames(wae) <- list(dm[, id], casefold(make.names(uae)))
-  
+  dimnames(wae) <- list(dm[, id], casefold(uae))
+
   # Drop low-frequency events
   mns <- apply(wae, 2, mean) <= drop
   wae <- wae[, !mns]
