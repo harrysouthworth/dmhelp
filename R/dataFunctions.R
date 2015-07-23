@@ -87,20 +87,22 @@ readTab <- function(path, file, ext=".csv", stringsAsFactors=FALSE){
 #' @param check A function to check the type of the baseline variable with. Defaults to \code{check=is.double},
 #'        so it checks to see tha the variable is numeric double precision.
 baselineData <- function(data, id="usubjid", test="param", baseline="base", wide=TRUE, check=is.double){
-  if (!check(data[, baseline]))
+  data <- as.data.frame(data)
+  b <- data[, baseline]
+  if (!check(b))
       stop("baseline variable isn't of the type it should be according to the check argument")
-  
+
   data <- data[, c(id, test, baseline)]
   data <- data[!is.na(data[, test]), ]
   data <- data[!is.na(data[, baseline]), ] # Drop pre-baseline values
-  
+
   # Sort before returning a single observation per patient
   data <- data[order(data[, test]), ]
   data <- data[order(data[, id]), ]
-  
+
   i <- paste(as.character(data[, id]), as.character(data[, test]))
   data <- data[cumsum(rle(i)$lengths), ]
-  
+
   data <- data[, c(id, test, baseline)]
 
   # Now need to reshape as wide
