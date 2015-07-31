@@ -201,7 +201,7 @@ wideData <- function(data, dm, id="usubjid", term="aeterm", trt="arm", arm.col=F
 
 
 #' Get columns with zero variance
-#' @param A \code{data.frame}.
+#' @param data A \code{data.frame}.
 #' @details Non-numeric columns are coerced to numeric. A logical vector is
 #'   returned with \code{TRUE} for any column with zero variance.
 #' @export zeroVar

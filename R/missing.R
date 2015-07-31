@@ -20,11 +20,14 @@ summarizeNAs <- function(data, th=.2){
   miss[miss[, 2] != "100%", ]
 }
 
-#' Missing patter plot
+#' Missing pattern plot
 #' @param data data.frame or matrix of data with missing data coded as "NA".
 #' @param xlab a title for the x axis: see 'title'
 #' @param ylab a title for the y axis: see 'title'
 #' @param main an overall title fo the plot: see 'title'
+#' @param mar Numeric vector with length 4 giving the margin sizes. Defaults to
+#'   \code{mar=c(5.1, 8.1, 4.1, 2.1)}
+#' @param ... Not used
 #' @details A simple wrapper for \code{mi:::missing.pattern.plot} with some default
 #'   argument values changed.
 #' @export missplot

@@ -51,6 +51,8 @@ getLogicalBaseline <- function(val, base){
 #' 
 #' @param data A data.frame, usually vital signs or lab data
 #' @param flag The name of the column that ought to contain the flags
+#' @param id The unique patient identifier
+#' @param test The name of the column that identifies the test being performed
 #' @param baseflag The value of flag for the baseline values. Defaults to 1
 #' @param visit The name of the visit variable in data
 #' @param basevisit The value of visit for the baseline values. Defaults to 0

@@ -9,6 +9,5 @@
 ##' @docType package
 ##' @author harry
 ##' @keywords package
-##' import reshape sas7bdat gbm mi
 
 NULL

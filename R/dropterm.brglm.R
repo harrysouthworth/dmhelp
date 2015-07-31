@@ -1,4 +1,5 @@
 #' @method dropterm brglm
+#' @importFrom MASS dropterm
 #' @export 
 dropterm.brglm <- function(object,
                            scope, scale = 0, test = c("none", "Chisq", "F"), k = 2, 

@@ -9,6 +9,10 @@
 #'          methods not to work. The \code{anova.brglm}, \code{addterm.brglm}
 #'          and \code{dropterm.brglm} functions are simple edits of other functions
 #'          that attempt to fix this behaviour.
+#'
+#'          NOTE that analysis of deviance with penalized likelihood is
+#'          controversial and you should back up the analysis with something
+#'          else, potentially a parametric bootstrap.
 #'          
 #'          The \code{dropterm} and {addterm} functions are for use with
 #'          \code{stepAIC} in the MASS package.

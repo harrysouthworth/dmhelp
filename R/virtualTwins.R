@@ -8,6 +8,7 @@
 #' @param interaction.depth Arguments to \code{gbm}
 #' @param cv.folds Arguments to \code{gbm}
 #' @param distribution Arguments to \code{gbm}
+#' @param class.stratify.cv Arguments to \code{gbm}
 #' @param quiet Whether to suppress warnings and messages. Defaults to \code{quiet=FALSE}
 #' @param n In \code{plot.virtualTwins}, the number of predictors to include in the
 #'        relative influence plots. Relative influence is sorted and the function
@@ -143,7 +144,7 @@ plot.virtualTwins <- function(x, n=12, abbrev=12, title=NULL, ...){
 #'   the response, the \code{predictions} element of the fitted virtual twins object
 #'   should be accessed directly, using something like
 #'   \code{target = as.numeric(ilogit(x$predictions[, 1]) - ilogit(x$predictions[, 2])}
-#'   in which \link{\code{ilogit}} is the inverse logit transformation.
+#'   in which \code{ilogit} is the inverse logit transformation.
 #' @return A \code{data.frame} containing all the predictors and the (thresholded)
 #'   difference in predicted values, \code{target}.
 #' @references J. C. Foster, J. M. G. Taylor and S. J. Ruberg, Subgroup identification
