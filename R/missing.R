@@ -27,16 +27,18 @@ summarizeNAs <- function(data, th=.2){
 #' @param main an overall title fo the plot: see 'title'
 #' @param mar Numeric vector with length 4 giving the margin sizes. Defaults to
 #'   \code{mar=c(5.1, 8.1, 4.1, 2.1)}
+#' @param cex.lab Charcter expansion for y-axis tick labels. Defaults to \code{cex.lab=.7}
 #' @param ... Not used
 #' @details A simple wrapper for \code{mi:::missing.pattern.plot} with some default
 #'   argument values changed.
 #' @export missplot
 missplot <- function(data, xlab="Index", ylab="Variable", main="",
-                     mar=c(5.1, 8.1, 4.1, 2.1), ...){
+                     mar=c(5.1, 8.1, 4.1, 2.1), cex.lab=.7, ...){
   oldpar <- par(no.readonly=TRUE)
   on.exit(oldpar)
   par(mar=mar)
-  mp.plot(data, y.order=TRUE, x.order=TRUE, mis.col="orange", xlab=xlab, ylab=ylab, main=main)
+  mp.plot(data, y.order=TRUE, x.order=TRUE, mis.col="orange",
+          xlab=xlab, ylab=ylab, main=main, cex.lab=cex.lab)
 }
 
 # Recent versions of the mi package refactor the code and I don't want to work with
@@ -49,7 +51,8 @@ mp.plot <- missing.pattern.plot <- function ( data, y.order = FALSE, x.order = F
                                               clustered = TRUE, 
                                               xlab = "Index", ylab = "Variable", 
                                               main = NULL, gray.scale = FALSE,
-                                              obs.col = "blue", mis.col = "red", ... ) {
+                                              obs.col = "blue", mis.col = "red",
+                                              cex.lab=.7, ... ) {
   
   if (is.null(main)) {
     main <- deparse( substitute( data ) )
@@ -83,12 +86,12 @@ mp.plot <- missing.pattern.plot <- function ( data, y.order = FALSE, x.order = F
   #  par( mgp = c( 1, .3, 0 ) )
   #  par( cex.lab = 0.7 )
   image(x = 1:nrow(data), y = 1:ncol(data), z = missingIndex, 
-        ylab = "", xlab = xlab, main = main, col = col ,yaxt = "n",
+        ylab = "", xlab = xlab, main = main, col = col, yaxt = "n",
         tck = -0.05, xaxt="n", ...)
-  box( "plot" )
-  axis( side = 2, at = 1:ncol( data ), labels = names( data ), las = 1, 
-        tick = FALSE, yaxs = "r", tcl = 0.3, xaxs ="i", yaxs = "i" )
-  mtext( ylab, side = 3 , line = 10, cex=0.7)
+  box("plot")
+  axis(side = 2, at = 1:ncol( data ), labels = names(data), las = 1, 
+        tick = FALSE, yaxs = "r", tcl = 0.3, xaxs ="i", yaxs = "i", cex.axis=cex.lab)
+  mtext( ylab, side = 3 , line = 10, cex=.7)
   if( x.order ) { 
     axis( side = 1, at =x.at, labels = x.lab, tick = FALSE, 
           xaxs = "i", las = 1 )   
