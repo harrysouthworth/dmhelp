@@ -16,17 +16,22 @@ binaries <- function(data){
 
 #' Get pairs of variables with high absolute correlation
 #' @export
-#' @param data A \code{data.frame} or similar
+#' @param data A \code{data.frame} or matrix
 #' @param th The threshold for absolute correlation above which we want the pairs of variables
 #' @details The function removes all non-numeric and all binomial columns before computing the correlation.
 #' @return A \code{data.frame} with 3 columns representing the pairs of variables and their Spearman's rank correlation
 hiCor <- function(data, th=.8){
-  if (!is.element(class(data)[1], c("data.frame", "matrix", "cast_df")))
-    stop("data should be a matrix, data.frame or cast_df")
+  if (!is.element(class(data)[1], c("data.frame", "matrix")))
+    stop("data should be a matrix, data.frame")
 
   data <- as.data.frame(data)
   data <- data[, numerics(data)]
   data <- data[, !binaries(data)]
+
+  zv <- zeroVar(data)
+  if (sum(zv) > 0) warning("Some columns have zero variance")
+  data <- data[, !zv]
+
   co1 <- cor(data, method="spearman", use="pairwise.complete.obs")
   co <- co1
 
@@ -35,7 +40,8 @@ hiCor <- function(data, th=.8){
   i <- abs(co) > th
 
   wh <- apply(i, 2, function(x, threshold, rn)
-    rn[abs(x) > threshold], th, rn=rownames(co))
+                      rn[abs(x) > threshold], th, rn=rownames(co)
+              )
   v1 <- rep(names(wh), unlist(lapply(wh, length)))
   v2 <- unlist(wh)
 
