@@ -33,6 +33,7 @@
 #' @export
 vt <- function(data, group, fo, n.trees=1000, shrinkage=.01, interaction.depth=6, cv.folds=10,
                distribution="bernoulli", class.stratify.cv=NULL, quiet=FALSE, n.cores=NULL){
+  if (missing(group)) stop("You must specify the group argument")
   g <- unique(data[, group])
   if (length(g) != 2)
      stop("There should be 2 treatment groups")
@@ -43,7 +44,7 @@ vt <- function(data, group, fo, n.trees=1000, shrinkage=.01, interaction.depth=6
   d1 <- d1[, names(d1) != group]
   d2 <- d2[, names(d2) != group]
 
-  shush <- if (quiet) suppressWarnings
+  shush <- if (quiet) function(x) suppressMessages(suppressWarnings(x))
   else function(x) x
 
   # Guess the distribution
