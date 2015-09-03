@@ -12,6 +12,7 @@
 #'   \code{data.frame} with a column "lastObsFlag" which takes value 1 if the
 #'   row represents the last observation for a particular value of "test", 0
 #'   otherwise. The code was debugged by akrun on Stackoverflow.
+#' @export getLastObsFlag
 getLastObsFlag <- function(data, id="subject", time="studyday", test="test"){
   data <- arrange_(data, id, test, time) %>%
     mutate_(lastObsFlag = 0) %>%
