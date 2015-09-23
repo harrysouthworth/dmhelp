@@ -16,7 +16,6 @@ contents <- function(dir, ext=".csv"){
   }
   invisible()
 }
-
 #' Change all character fields in a data.frame to factors
 #' @param x A \code{data.frame}.
 #' @export chars2factors
@@ -29,6 +28,21 @@ chars2factors <- function(x){
   wh <- sapply(x, is.character)
   for (i in (1:ncol(x))[wh])
     x[, i] <- as.factor(x[, i])
+  x
+}
+
+#' Change all factor fields in a data.frame to character
+#' @param x A \code{data.frame}.
+#' @export factors2chars
+factors2chars <- function(x){
+  if (!is.data.frame(x)) stop("x should be a data.frame")
+  # Next line is because dplyr gives objects class tbl_df and data.frame, so need to
+  # coerce to straightforward data.frame to get as.factor to work on x[, i]
+  # 2015-05-05
+  x <- as.data.frame(x)
+  wh <- sapply(x, is.factor)
+  for (i in (1:ncol(x))[wh])
+    x[, i] <- as.character(x[, i])
   x
 }
 
