@@ -11,5 +11,8 @@ License: TBD
 Imports:
     MASS
 Depends:
-    gbm, tidyr, dplyr,
+    gbm,
+    tidyr,
+    dplyr,
     brglm
+RoxygenNote: 5.0.1

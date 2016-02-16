@@ -22,9 +22,7 @@ niceLogTicks <- function(x, pad=0.05, base=2){
 
   # Get location for upper tick mark
   if (m >= 2){ # Want max integer that is a multiple of 2
-    zm <- floor(m) # Integer part
-    zm <- if (zm %% 2 == 0) zm
-          else zm - 1
+    zm <- floor(sqrt(m))
   } else { # Choose from a list of probably nice values
     zm <- max(upperTickLT[upperTickLT < m])
   }
