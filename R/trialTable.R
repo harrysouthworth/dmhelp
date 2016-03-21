@@ -71,8 +71,18 @@ trialTable <- function(data, test = "test", arm = "arm", value = "value", visit 
 #' @export xtable.trialTable
 xtable.trialTable <- function(x, caption=paste("Summary of", names(x)), label=paste0(tab, gsub(" ", "_", names(x))),
                               align=NULL, digits=NULL, display=NULL, auto=FALSE, ...){
+  res <- list()
+  for (i in 1:length(x)){
+    res[[i]] <- xtable(x[[i]], label=label[i], caption=caption[i], align=align, digits=digits, auto=auto, ...)
+  }
+  class(res) <- "trialTable.xtable"
+  res
+}
 
-
-
+#' @export print.trialTable.xtable
+print.trialTable.xtable <- function(x, ...){
+  for (i in 1:length(res)){
+    print(x[[i]], ...)
+  }
 }
 
