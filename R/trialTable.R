@@ -12,7 +12,8 @@
 #'   factor, so you need to coerce character vectors prior to using this function.
 #' @export trialTable
 trialTable <- function(data, test = "test", arm = "arm", value = "value", visit = "visit", visit_label="Visit",
-                       numeric_summary = "fivenum"){
+                       numeric_summary = "fivenum", digits=2){
+  theCall <- match.call()
   if (!(numeric_summary %in% c("fivenum", "stupid"))){
     stop("numeric_summary should be either 'fivenum' or 'stupid'")
   }
@@ -43,14 +44,17 @@ trialTable <- function(data, test = "test", arm = "arm", value = "value", visit 
         if (numeric_summary == "fivenum"){ # Five number summary
           wh <- group_by_(d, visit) %>%
             summarize(N=n(), Missing = sum(is.na(value)),
-                      Min.=min(value, na.rm=TRUE), Q1=quantile(value, prob=.25, na.rm=TRUE),
-                      Median=median(value, na.rm=TRUE), Q3 = quantile(value, prob=.75, na.rm=TRUE),
-                      Max.=max(value, na.rm=TRUE))
+                      Min. = min(value, na.rm=TRUE),
+                      Q1 = round(quantile(value, prob=.25, na.rm=TRUE), digits=digits),
+                      Median = round(median(value, na.rm=TRUE), digits=digits),
+                      Q3 = round(quantile(value, prob=.75, na.rm=TRUE), digits=digits),
+                      Max. = round(max(value, na.rm=TRUE), digits=digits))
         } else {                           # Gaussian summary
           wh <- group_by_(d, visit) %>%
             summarize(N=n(), Missing = sum(is.na(value)),
-                      Min.=min(value, na.rm=TRUE), Median=median(value, na.rm=TRUE),
-                      Mean=mean(value, na.rm=TRUE), SD=sd(value, na.rm=TRUE),
+                      Min.=min(value, na.rm=TRUE), Median=round(median(value, na.rm=TRUE), digits=digits),
+                      Mean=round(mean(value, na.rm=TRUE), digits=digits),
+                      SD=round(sd(value, na.rm=TRUE), digits=digits),
                       Max.=max(value, na.rm=TRUE))
         }
       } else if (is.factor(d[, value])){
@@ -63,14 +67,25 @@ trialTable <- function(data, test = "test", arm = "arm", value = "value", visit 
       names(res)[index] <- paste0(the_test, ": ", the_arm)
     } # Close for (the_visit
   } # Close for (the_arm
-  class(res) <- "trialTable"
-  res
+
+  out <- list(tables = res, call = theCall)
+  class(out) <- "trialTable"
+  out
 } # Close trialTable
 
 
 #' @export xtable.trialTable
-xtable.trialTable <- function(x, caption=paste("Summary of", names(x)), label=paste0(tab, gsub(" ", "_", names(x))),
+xtable.trialTable <- function(x, caption=NULL, label=NULL,
                               align=NULL, digits=NULL, display=NULL, auto=FALSE, ...){
+  x <- x$tables
+
+  if (is.null(caption)){
+    caption <- paste("Summary of", names(x))
+  }
+  if (is.null(label)){
+    label <- paste0("tab:", gsub(" ", "_", names(x)))
+  }
+
   res <- list()
   for (i in 1:length(x)){
     res[[i]] <- xtable(x[[i]], label=label[i], caption=caption[i], align=align, digits=digits, auto=auto, ...)
@@ -80,9 +95,10 @@ xtable.trialTable <- function(x, caption=paste("Summary of", names(x)), label=pa
 }
 
 #' @export print.trialTable.xtable
-print.trialTable.xtable <- function(x, ...){
+print.trialTable.xtable <- function(x, clear=TRUE, ...){
   for (i in 1:length(res)){
     print(x[[i]], ...)
+    if (clear) cat("\\clearpage \\newpage")
   }
 }
 
