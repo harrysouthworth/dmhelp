@@ -7,6 +7,8 @@
 #' @param visit_label Character string to be used as the column label for visit
 #' @param numeric_summary Character string that should be either 'fivenum' (the default)
 #'   or 'stupid' for a summary that only makes sense for Gaussian data
+#' @param digits The number of decimal places to round to. By convention, you should override
+#'   the default with one more decimal place than the data are recorded to
 #' @details You might have to specify factor levels in the order you want them to appear before
 #'   using this function. Also, this function will only work with values that are numeric or
 #'   factor, so you need to coerce character vectors prior to using this function.
@@ -31,12 +33,12 @@ trialTable <- function(data, test = "test", arm = "arm", value = "value", visit 
   res <- list()
   index <- 0
 
-  for (the_test in unique(data[, test])){
-    for(the_arm in unique(data[, arm])){
+  for (the_test in unique(data[, "test"])){
+    for(the_arm in unique(data[, "arm"])){
       index <- index + 1
 
-      d <- data[data[, test]  ==  the_test & data[, arm] == the_arm, ]
-      d <- d[, !(names(d) == arm)]
+      d <- data[data[, "test"]  ==  the_test & data[, "arm"] == the_arm, ]
+      d <- d[, !(names(d) == "arm")]
 
       if (nrow(d) == 0) stop("After subsetting data has no rows!")
 
@@ -58,11 +60,11 @@ trialTable <- function(data, test = "test", arm = "arm", value = "value", visit 
                       Max.=max(value, na.rm=TRUE))
         }
       } else if (is.factor(d[, value])){
-        wh <- group_by_(d, visit) %>%
-          table(value)
-      }
+        wh <- group_by(d, visit) %>%
+          count(value)
+        }
 
-      names(wh)[names(wh) == visit] <- visit_label
+      names(wh)[names(wh) == "visit"] <- visit_label
       res[[index]] <- as.data.frame(wh)
       names(res)[index] <- paste0(the_test, ": ", the_arm)
     } # Close for (the_visit
