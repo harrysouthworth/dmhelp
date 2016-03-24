@@ -9,6 +9,7 @@
 #'   function fails.
 #' @export qc
 qc <- function(x, id=c("usubjid", "subject", "patient", "randno"), verbose=FALSE){
+  x <- as.data.frame(x) # Get spurious error if class is "tbl_df"
   if (missing(id)) id <- id[id %in% names(x)][1]
   if (verbose) message(paste("id =", id))
   stopifnot(nrow(x) == length(unique(x[, id])))

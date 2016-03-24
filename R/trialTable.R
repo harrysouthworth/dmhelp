@@ -59,7 +59,7 @@ trialTable <- function(data, test = "test", arm = "arm", value = "value", visit 
                       SD=round(sd(value, na.rm=TRUE), digits=digits),
                       Max.=max(value, na.rm=TRUE))
         }
-      } else if (is.factor(d[, value])){
+      } else if (is.factor(d[, value])){   # Counting factor levels
         wh <- group_by(d, visit) %>%
           count(value)
         }
