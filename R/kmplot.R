@@ -8,7 +8,7 @@
 #' @param m For converting between days and months
 #'
 #' @details This had been tested a bit, but not extensively
-
+#' @export kmplot
 kmplot <-
   function (x, conf.int, mark.time = FALSE, mark = 3, col = 1,
             lty = 1, lwd = 1, cex = 1, log = FALSE, xscale = 1, yscale = 1,
