@@ -11,7 +11,7 @@
 #' @export kmplot
 kmplot <-
   function (x, conf.int, mark.time = FALSE, mark = 3, col = 1,
-            lty = 1, lwd = 1, cex = 1, log = FALSE, xscale = 1, yscale = 1,
+            lty = 1, lwd = 1, cex = 1, log = FALSE, xscale = 1, yscale = 100,
             firstx = 0, firsty = 1, xmax, ymin = 0, fun, xlab = "", ylab = "",
             xaxs = "S", conf.times, conf.cap = 0.005, conf.offset = 0.012,
             times=NULL, n=NULL, dead=NULL, mar=c(7.1, 4.1, 4.1, 2.1),
