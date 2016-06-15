@@ -1,4 +1,4 @@
-#' Quick check that a data.frame contains only one object per row
+#' Quick check that a data.frame contains only one object per row and has at least one row
 #' @param x A \code{data.frame}
 #' @param id Character string giving the name of the object identifier column.
 #'   Defaults to \code{id=c("usubjid", "subject", "patient", "randno")} and the
@@ -12,5 +12,6 @@ qc <- function(x, id=c("usubjid", "subject", "patient", "randno"), verbose=FALSE
   x <- as.data.frame(x) # Get spurious error if class is "tbl_df"
   if (missing(id)) id <- id[id %in% names(x)][1]
   if (verbose) message(paste("id =", id))
-  stopifnot(nrow(x) == length(unique(x[, id])))
+
+  stopifnot(nrow(x) == length(unique(x[, id])), nrow(x) > 0)
 }
